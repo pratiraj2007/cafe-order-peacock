@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Peacock Café — Kitchen Dashboard</title>
+  <meta name="description" content="Real-time kitchen order management dashboard for Peacock Café." />
+  <link rel="stylesheet" href="/css/kitchen.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👨‍🍳</text></svg>" />
+</head>
+<body>
+
+  <!-- ==================== HEADER ==================== -->
+  <header class="kitchen-header">
+    <div class="kitchen-logo">
+      <span class="kitchen-logo-icon">🦚</span>
+      <h1>Peacock Café <span>Kitchen Dashboard</span></h1>
+    </div>
+    <div class="kitchen-actions">
+      <button class="sound-toggle active" id="soundToggle" title="Toggle Sound Notifications">
+        🔔
+      </button>
+      <div class="live-indicator">
+        <div class="live-dot"></div>
+        <span>Live</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== STATS BAR ==================== -->
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="stat-icon pending">⏳</div>
+      <div>
+        <div class="stat-number pending" id="statPending">0</div>
+        <div class="stat-label">Pending</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon preparing">🔥</div>
+      <div>
+        <div class="stat-number preparing" id="statPreparing">0</div>
+        <div class="stat-label">Preparing</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon ready">✅</div>
+      <div>
+        <div class="stat-number ready" id="statReady">0</div>
+        <div class="stat-label">Ready</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon total">📦</div>
+      <div>
+        <div class="stat-number total" id="statTotal">0</div>
+        <div class="stat-label">Total Today</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== FILTER TABS ==================== -->
+  <div class="filter-section" id="filterTabs">
+    <button class="filter-tab active" data-filter="All">All Orders</button>
+    <button class="filter-tab" data-filter="Pending">⏳ Pending</button>
+    <button class="filter-tab" data-filter="Preparing">🔥 Preparing</button>
+    <button class="filter-tab" data-filter="Ready">✅ Ready</button>
+    <button class="filter-tab" data-filter="Completed">✔️ Completed</button>
+  </div>
+
+  <!-- ==================== ORDERS GRID ==================== -->
+  <div class="orders-section">
+    <div class="orders-grid" id="ordersGrid">
+      <!-- Order cards rendered by JavaScript -->
+      <div class="no-orders" id="noOrders">
+        <div class="no-orders-icon">📋</div>
+        <h3>No orders yet</h3>
+        <p>New orders will appear here in real-time</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SCRIPTS ==================== -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/kitchen.js"></script>
+</body>
+</html>

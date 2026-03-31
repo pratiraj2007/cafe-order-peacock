@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Peacock Café — Fresh Coffee & Delicious Treats</title>
+  <meta name="description"
+    content="Order your favorite coffee, snacks, and desserts from Peacock Café. Fresh, handcrafted, and served with love." />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦚</text></svg>" />
+</head>
+
+<body>
+
+  <!-- ==================== HEADER ==================== -->
+  <header class="header" id="header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">🦚</span>
+        <span class="logo-text">Peacock Café</span>
+      </div>
+      <div class="header-actions">
+        <button class="theme-toggle" id="themeToggle" title="Toggle Dark Mode">🌙</button>
+        <button class="cart-btn" id="cartBtn" title="View Cart">
+          🛒
+          <span class="cart-count hidden" id="cartCount">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== HERO SECTION ==================== -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-badge">✨ Freshly crafted daily</div>
+      <h1>Life begins after <span>Coffee</span></h1>
+      <p>Handcrafted beverages, artisan snacks, and irresistible desserts — all in one cozy spot.</p>
+      <button class="hero-cta" onclick="document.getElementById('menu').scrollIntoView({behavior:'smooth'})">
+        View Our Menu ↓
+      </button>
+      <div class="hero-stats">
+        <div>
+          <div class="hero-stat-number">9+</div>
+          <div class="hero-stat-label">Menu Items</div>
+        </div>
+        <div>
+          <div class="hero-stat-number">4.9★</div>
+          <div class="hero-stat-label">Rating</div>
+        </div>
+        <div>
+          <div class="hero-stat-number">15m</div>
+          <div class="hero-stat-label">Avg. Time</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== CATEGORY TABS ==================== -->
+  <div class="category-section" id="menu">
+    <div class="category-tabs" id="categoryTabs">
+      <button class="category-tab active" data-category="All">🍽️ All</button>
+      <button class="category-tab" data-category="Beverages">☕ Beverages</button>
+      <button class="category-tab" data-category="Snacks">🥐 Snacks</button>
+    </div>
+  </div>
+
+  <!-- ==================== MENU GRID ==================== -->
+  <main class="menu-section">
+    <div class="menu-grid" id="menuGrid">
+      <!-- Menu items will be rendered here by JavaScript -->
+    </div>
+  </main>
+
+  <!-- ==================== QR CODE SECTION ==================== -->
+  <section class="qr-section">
+    <div class="qr-card">
+      <h3>📱 Scan to Order</h3>
+      <p>Share this QR code so anyone can order from their phone!</p>
+      <div id="qr-code-container"></div>
+    </div>
+  </section>
+
+  <!-- ==================== FOOTER ==================== -->
+  <footer class="footer">
+    <p>Made with <span class="heart">❤️</span> by Peacock Café | Open 2 PM – 2 AM</p>
+    <p style="font-size: 0.9em; margin-top: 5px; color: var(--text-muted);">Made by <strong>PRATIRAJ BANGADE</strong></p>
+  </footer>
+
+  <!-- ==================== FLOATING CART BUTTON (Mobile) ==================== -->
+  <button class="floating-cart" id="floatingCart">
+    🛒
+    <span class="float-count" id="floatCount">0</span>
+  </button>
+
+  <!-- ==================== CART DRAWER ==================== -->
+  <div class="cart-overlay" id="cartOverlay"></div>
+  <aside class="cart-drawer" id="cartDrawer">
+    <!-- CART VIEW -->
+    <div class="cart-view" id="cartView">
+      <div class="cart-drawer-header">
+        <h2 class="cart-drawer-title">🛒 Your Order</h2>
+        <button class="cart-close" id="cartClose">✕</button>
+      </div>
+      <div class="cart-items" id="cartItems">
+        <!-- Cart items rendered by JS -->
+      </div>
+      <div class="cart-footer" id="cartFooter" style="display:none;">
+        <div class="cart-summary">
+          <span class="cart-total-label">Total</span>
+          <span class="cart-total-price" id="cartTotalPrice">₹0</span>
+        </div>
+        <button class="checkout-btn" id="checkoutBtn">
+          Proceed to Checkout →
+        </button>
+      </div>
+    </div>
+
+    <!-- CHECKOUT VIEW -->
+    <div class="checkout-section" id="checkoutView">
+      <div class="checkout-header">
+        <button class="back-btn" id="backToCart">←</button>
+        <h2 class="cart-drawer-title">📋 Checkout</h2>
+      </div>
+      <div class="checkout-form" id="checkoutForm">
+        <div class="form-group">
+          <label class="form-label" for="customerName">Your Name *</label>
+          <input class="form-input" type="text" id="customerName" placeholder="e.g. Rahul" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="tableNumber">Table Number</label>
+          <input class="form-input" type="text" id="tableNumber" placeholder="e.g. Table 5" />
+        </div>
+        <div class="form-divider">or</div>
+        <div class="form-group">
+          <label class="form-label" for="mobileNumber">Mobile Number</label>
+          <input class="form-input" type="tel" id="mobileNumber" placeholder="e.g. 9876543210" />
+        </div>
+
+        <!-- Order Summary -->
+        <div class="checkout-summary" id="checkoutSummary">
+          <!-- Filled by JS -->
+        </div>
+      </div>
+      <div class="checkout-footer">
+        <button class="place-order-btn" id="placeOrderBtn">
+          <span class="btn-text">🎉 Place Order</span>
+          <div class="spinner"></div>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ==================== SUCCESS MODAL ==================== -->
+  <div class="success-overlay" id="successOverlay">
+    <div class="success-modal" id="successModal">
+      <div class="success-checkmark">✓</div>
+      <h2>Order Placed! 🎉</h2>
+      <div class="success-order-id" id="successOrderId">ORD-XXXX</div>
+      <p>Your order has been sent to the kitchen.<br />We'll have it ready shortly!</p>
+      <button class="success-close-btn" id="successCloseBtn">Back to Menu</button>
+    </div>
+  </div>
+
+  <!-- ==================== TOAST CONTAINER ==================== -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- ==================== SCRIPTS ==================== -->
+  <!-- Socket.io client (served by the server) -->
+  <script src="/socket.io/socket.io.js"></script>
+  <!-- QR Code library -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <!-- Main App Logic -->
+  <script src="/js/app.js"></script>
+</body>
+
+</html>
