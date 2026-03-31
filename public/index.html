@@ -177,6 +177,21 @@
   <!-- ==================== TOAST CONTAINER ==================== -->
   <div class="toast-container" id="toastContainer"></div>
 
+  <!-- ==================== READY OVERLAY ==================== -->
+  <div class="ready-overlay" id="readyOverlay">
+    <div class="ready-modal">
+      <div class="ready-confetti">🎉🎉🎉</div>
+      <div class="ready-icon">🦚</div>
+      <h2>Your Order is Ready!</h2>
+      <div class="ready-order-id" id="readyOrderIdDisplay">ORDER #XXXX</div>
+      <p class="ready-desc">Please collect your delicious items from the pick-up counter.</p>
+      <button class="ready-close-btn" id="readyCloseBtn">Enjoy Your Meal!</button>
+    </div>
+  </div>
+
+  <!-- Audio for notification -->
+  <audio id="notificationSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+
   <!-- ==================== SCRIPTS ==================== -->
   <!-- Socket.io client (served by the server) -->
   <script src="/socket.io/socket.io.js"></script>

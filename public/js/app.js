@@ -368,6 +368,8 @@ async function placeOrder() {
   const tableNumber = document.getElementById('tableNumber').value.trim();
   const mobileNumber = document.getElementById('mobileNumber').value.trim();
 
+  const socketId = socket.id; // Get current socket ID for targeted notifications
+
   // Validation
   if (!customerName) {
     showToast('⚠️ Please enter your name');
@@ -409,7 +411,8 @@ async function placeOrder() {
         items: cart.map(item => ({ id: item.id, quantity: item.quantity })),
         customerName,
         tableNumber: tableNumber || undefined,
-        mobileNumber: mobileNumber || undefined
+        mobileNumber: mobileNumber || undefined,
+        socketId: socketId
       })
     });
 
@@ -600,6 +603,39 @@ socket.on('settings-updated', (data) => {
   }
 });
 
+// Listen for specific "Order Ready" notification
+socket.on('order-ready', (order) => {
+  console.log('🎉 Your order is ready!', order);
+  showReadyModal(order);
+  playNotificationSound();
+});
+
+// ============================================================
+// 🔔 NOTIFICATION UTILS
+// ============================================================
+function showReadyModal(order) {
+  const overlay = document.getElementById('readyOverlay');
+  const displayId = document.getElementById('readyOrderIdDisplay');
+  
+  if (displayId) displayId.textContent = `ORDER #${order.orderId}`;
+  if (overlay) overlay.classList.add('active');
+  
+  // Confetti effect could be added here if desired
+}
+
+function closeReadyModal() {
+  const overlay = document.getElementById('readyOverlay');
+  if (overlay) overlay.classList.remove('active');
+}
+
+function playNotificationSound() {
+  const audio = document.getElementById('notificationSound');
+  if (audio) {
+    audio.currentTime = 0;
+    audio.play().catch(err => console.log('Audio play failed:', err));
+  }
+}
+
 // ============================================================
 // 🎯 EVENT LISTENERS
 // ============================================================
@@ -629,11 +665,15 @@ function setupEventListeners() {
   // Theme toggle
   document.getElementById('themeToggle').addEventListener('click', toggleTheme);
 
+  // Ready Modal close
+  document.getElementById('readyCloseBtn').addEventListener('click', closeReadyModal);
+
   // Close cart with Escape key
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       closeCart();
       closeSuccessModal();
+      closeReadyModal();
     }
   });
 }

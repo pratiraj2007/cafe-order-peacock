@@ -204,7 +204,7 @@ app.post('/api/orders', (req, res) => {
     });
   }
 
-  const { items, customerName, tableNumber, mobileNumber } = req.body;
+  const { items, customerName, tableNumber, mobileNumber, socketId } = req.body;
 
   // Validate request
   if (!items || items.length === 0) {
@@ -239,6 +239,7 @@ app.post('/api/orders', (req, res) => {
     customerName,
     tableNumber: tableNumber || 'N/A',
     mobileNumber: mobileNumber || 'N/A',
+    socketId: socketId || null,
     status: 'Pending',       // Pending → Preparing → Ready
     timestamp: new Date().toISOString(),
     createdAt: Date.now()
@@ -291,6 +292,11 @@ app.patch('/api/orders/:orderId', (req, res) => {
   order.status = status;
   order.updatedAt = new Date().toISOString();
   saveOrders();
+
+  // 🔴 REAL-TIME: Notify specific customer if ready
+  if (status === 'Ready' && order.socketId) {
+    io.to(order.socketId).emit('order-ready', order);
+  }
 
   // 🔴 REAL-TIME: Notify all clients of status change
   io.emit('order-updated', { orderId, status });
