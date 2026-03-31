@@ -347,6 +347,15 @@ async function placeOrder() {
     return;
   }
 
+  if (tableNumber) {
+    const tableNum = parseInt(tableNumber, 10);
+    if (isNaN(tableNum) || tableNum < 1 || tableNum > 10) {
+      showToast('⚠️ Table number must be between 1 and 10');
+      document.getElementById('tableNumber').focus();
+      return;
+    }
+  }
+
   if (!tableNumber && !mobileNumber) {
     showToast('⚠️ Please enter table number or mobile');
     document.getElementById('tableNumber').focus();
