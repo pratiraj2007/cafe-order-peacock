@@ -20,8 +20,8 @@
       <button class="sound-toggle active" id="soundToggle" title="Toggle Sound Notifications">
         🔔
       </button>
-      <button class="kitchen-btn" id="manageZonesBtn" title="Manage Dining Zones">
-        📍 Zones
+      <button class="status-toggle-btn open" id="statusToggleBtn">
+        🏪 Café: Open
       </button>
       <div class="live-indicator">
         <div class="live-dot"></div>
@@ -29,24 +29,6 @@
       </div>
     </div>
   </header>
-
-  <!-- ==================== SETTINGS MODAL ==================== -->
-  <div class="settings-overlay" id="settingsOverlay">
-    <div class="settings-modal" id="settingsModal">
-      <div class="settings-header">
-        <h2>📍 Manage Dining Zones</h2>
-        <button class="settings-close" id="settingsClose">✕</button>
-      </div>
-      <p class="settings-desc">Enable or disable zones where customers can place orders. Changes reflect instantly.</p>
-      <div class="zones-list" id="zonesList">
-        <!-- Zones will be rendered here by JS -->
-        <div class="loading-settings">Loading zones...</div>
-      </div>
-      <div class="settings-footer">
-        <button class="settings-done-btn" id="settingsDoneBtn">Done</button>
-      </div>
-    </div>
-  </div>
 
   <!-- ==================== STATS BAR ==================== -->
   <div class="stats-bar">

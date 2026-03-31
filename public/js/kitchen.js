@@ -43,7 +43,7 @@ async function fetchOrders() {
 }
 
 // ============================================================
-// ⚙️ SETTINGS MANAGEMENT (ZONES)
+// ⚙️ SETTINGS MANAGEMENT (OPEN/CLOSED)
 // ============================================================
 async function fetchSettings() {
   try {
@@ -51,56 +51,44 @@ async function fetchSettings() {
     const data = await response.json();
     if (data.success) {
       settings = data.data;
-      renderZonesList();
+      updateStatusUI();
     }
   } catch (error) {
     console.error('Error fetching settings:', error);
   }
 }
 
-function renderZonesList() {
-  const container = document.getElementById('zonesList');
-  if (!container || !settings) return;
+function updateStatusUI() {
+  const btn = document.getElementById('statusToggleBtn');
+  if (!btn || !settings) return;
 
-  container.innerHTML = settings.zones.map(zone => `
-    <div class="zone-setting-item">
-      <div class="zone-setting-info">
-        <span class="zone-setting-emoji">${zone.emoji}</span>
-        <span class="zone-setting-name">${zone.name}</span>
-      </div>
-      <label class="switch">
-        <input type="checkbox" ${zone.active ? 'checked' : ''} onchange="toggleZone('${zone.id}', this.checked)">
-        <span class="slider"></span>
-      </label>
-    </div>
-  `).join('');
+  if (settings.isOpen) {
+    btn.textContent = '🏪 Café: Open';
+    btn.className = 'status-toggle-btn open';
+  } else {
+    btn.textContent = '🔒 Café: Closed';
+    btn.className = 'status-toggle-btn closed';
+  }
 }
 
-async function toggleZone(zoneId, isActive) {
+async function toggleCafeStatus() {
+  if (!settings) return;
+  const newStatus = !settings.isOpen;
+
   try {
-    const response = await fetch('/api/settings/zones', {
-      method: 'PATCH',
+    const response = await fetch('/api/settings', {
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ zoneId, active: isActive })
+      body: JSON.stringify({ isOpen: newStatus })
     });
     
     const data = await response.json();
     if (data.success) {
       settings = data.data;
-      // Socket will notify other clients
+      updateStatusUI();
     }
   } catch (error) {
-    console.error('Error toggling zone:', error);
-  }
-}
-
-function toggleSettingsModal(show) {
-  const overlay = document.getElementById('settingsOverlay');
-  if (show) {
-    overlay.classList.add('active');
-    fetchSettings(); // Refresh before showing
-  } else {
-    overlay.classList.remove('active');
+    console.error('Error toggling status:', error);
   }
 }
 
@@ -429,11 +417,6 @@ function setupEventListeners() {
     tab.addEventListener('click', () => setFilter(tab.dataset.filter));
   });
 
-  // Settings Modal
-  document.getElementById('manageZonesBtn').addEventListener('click', () => toggleSettingsModal(true));
-  document.getElementById('settingsClose').addEventListener('click', () => toggleSettingsModal(false));
-  document.getElementById('settingsDoneBtn').addEventListener('click', () => toggleSettingsModal(false));
-  document.getElementById('settingsOverlay').addEventListener('click', (e) => {
-    if (e.target === document.getElementById('settingsOverlay')) toggleSettingsModal(false);
-  });
+  // Café Status Toggle
+  document.getElementById('statusToggleBtn').addEventListener('click', toggleCafeStatus);
 }

@@ -93,13 +93,10 @@ const DATA_DIR = path.join(__dirname, 'data');
 const ORDERS_FILE = path.join(DATA_DIR, 'orders.json');
 const SETTINGS_FILE = path.join(DATA_DIR, 'settings.json');
 
-// Default zones configuration
-const DEFAULT_ZONES = [
-  { id: 'main', name: 'Main Hall', emoji: '🏛️', active: true },
-  { id: 'terrace', name: 'Outdoor Terrace', emoji: '🌿', active: true },
-  { id: 'garden', name: 'Garden Area', emoji: '🌸', active: true },
-  { id: 'ac', name: 'AC Cabin', emoji: '❄️', active: true }
-];
+// Default app configuration
+const DEFAULT_SETTINGS = {
+  isOpen: true // Café status (Open/Closed)
+};
 
 // Ensure data directory exists
 if (!fs.existsSync(DATA_DIR)) {
@@ -127,7 +124,7 @@ function saveOrders() {
 }
 
 // Settings management
-let settings = { zones: DEFAULT_ZONES };
+let settings = DEFAULT_SETTINGS;
 try {
   if (fs.existsSync(SETTINGS_FILE)) {
     settings = JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf-8'));
@@ -180,26 +177,33 @@ app.get('/api/settings', (req, res) => {
   });
 });
 
-// PATCH /api/settings/zones - Update zone status
-app.patch('/api/settings/zones', (req, res) => {
-  const { zoneId, active } = req.body;
-  const zone = settings.zones.find(z => z.id === zoneId);
+// POST /api/settings - Update general settings (Open/Closed)
+app.post('/api/settings', (req, res) => {
+  const { isOpen } = req.body;
   
-  if (!zone) {
-    return res.status(404).json({ success: false, message: 'Zone not found' });
+  if (typeof isOpen !== 'boolean') {
+    return res.status(400).json({ success: false, message: 'Invalid isOpen value' });
   }
 
-  zone.active = active;
+  settings.isOpen = isOpen;
   saveSettings();
 
   // Notify all connected clients of settings change
   io.emit('settings-updated', settings);
 
-  res.json({ success: true, data: settings });
+  res.json({ success: true, data: settings, message: `Café is now ${isOpen ? 'Open' : 'Closed'}` });
 });
 
 // POST /api/orders - Place a new order
 app.post('/api/orders', (req, res) => {
+  // ⛔ Check if café is open
+  if (!settings.isOpen) {
+    return res.status(403).json({ 
+      success: false, 
+      message: 'Ordering is currently unavailable. The Café is closed.' 
+    });
+  }
+
   const { items, customerName, tableNumber, mobileNumber } = req.body;
 
   // Validate request
@@ -235,7 +239,6 @@ app.post('/api/orders', (req, res) => {
     customerName,
     tableNumber: tableNumber || 'N/A',
     mobileNumber: mobileNumber || 'N/A',
-    zone: req.body.zone || 'Main Hall', // Default to Main Hall if not provided
     status: 'Pending',       // Pending → Preparing → Ready
     timestamp: new Date().toISOString(),
     createdAt: Date.now()

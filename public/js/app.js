@@ -44,35 +44,31 @@ async function fetchMenu() {
   }
 }
 
-// --- Fetch settings (like active zones) ---
+// --- Fetch app settings (like café status) ---
 async function fetchSettings() {
   try {
     const response = await fetch('/api/settings');
     const data = await response.json();
 
     if (data.success) {
-      renderZones(data.data.zones);
+      updateCafeStatusUI(data.data.isOpen);
     }
   } catch (error) {
     console.error('Error fetching settings:', error);
   }
 }
 
-// --- Render active dining zones in the dropdown ---
-function renderZones(zones) {
-  const select = document.getElementById('diningZone');
-  if (!select) return;
-
-  const activeZones = zones.filter(z => z.active);
-  
-  if (activeZones.length === 0) {
-    select.innerHTML = '<option value="Takeaway" selected>🥡 Takeaway Only</option>';
-    return;
+// --- Update UI based on café status ---
+function updateCafeStatusUI(isOpen) {
+  const overlay = document.getElementById('closedOverlay');
+  if (isOpen) {
+    overlay.classList.remove('active');
+    document.body.style.overflow = '';
+  } else {
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    closeCart(); // Close cart if they were ordering
   }
-
-  select.innerHTML = activeZones.map(z => `
-    <option value="${z.name}">${z.emoji} ${z.name}</option>
-  `).join('');
 }
 
 // ============================================================
@@ -371,7 +367,6 @@ async function placeOrder() {
   const customerName = document.getElementById('customerName').value.trim();
   const tableNumber = document.getElementById('tableNumber').value.trim();
   const mobileNumber = document.getElementById('mobileNumber').value.trim();
-  const diningZone = document.getElementById('diningZone').value;
 
   // Validation
   if (!customerName) {
@@ -414,8 +409,7 @@ async function placeOrder() {
         items: cart.map(item => ({ id: item.id, quantity: item.quantity })),
         customerName,
         tableNumber: tableNumber || undefined,
-        mobileNumber: mobileNumber || undefined,
-        zone: diningZone
+        mobileNumber: mobileNumber || undefined
       })
     });
 
@@ -438,7 +432,6 @@ async function placeOrder() {
       document.getElementById('customerName').value = '';
       document.getElementById('tableNumber').value = '';
       document.getElementById('mobileNumber').value = '';
-      document.getElementById('diningZone').value = 'Main Hall';
     } else {
       showToast(`❌ ${data.message}`);
     }
@@ -598,12 +591,12 @@ socket.on('order-updated', (data) => {
   console.log('Order updated:', data);
 });
 
-// Listen for settings updates (like zones being enabled/disabled)
+// Listen for settings updates (like café being opened/closed)
 socket.on('settings-updated', (data) => {
   console.log('Settings updated:', data);
-  if (data.zones) {
-    renderZones(data.zones);
-    showToast('Dining zones updated!');
+  if (typeof data.isOpen === 'boolean') {
+    updateCafeStatusUI(data.isOpen);
+    showToast(`🏪 Café is now ${data.isOpen ? 'Open' : 'Closed'}`);
   }
 });
 
