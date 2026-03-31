@@ -648,7 +648,10 @@ input, select { font-family: inherit; }
   right: 0;
   width: 420px;
   max-width: 100%;
-  height: 100vh;
+  height: 100%;
+  height: 100dvh;
+  max-height: 100vh;
+  overflow: hidden;
   background: var(--bg-primary);
   z-index: 201;
   transform: translateX(100%);
@@ -881,6 +884,7 @@ input, select { font-family: inherit; }
   display: none;
   flex-direction: column;
   height: 100%;
+  overflow: hidden;
 }
 
 .checkout-section.active {
@@ -1007,9 +1011,10 @@ input, select { font-family: inherit; }
 }
 
 .checkout-footer {
-  padding: 20px 24px;
+  padding: 20px 24px calc(20px + env(safe-area-inset-bottom, 0px));
   border-top: 1px solid var(--border-color);
   background: var(--bg-card);
+  flex-shrink: 0;
 }
 
 .place-order-btn {
