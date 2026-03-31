@@ -19,6 +19,7 @@ let activeCategory = 'All';
 document.addEventListener('DOMContentLoaded', () => {
   loadCart();              // Load cart from localStorage
   fetchMenu();             // Fetch menu from API
+  fetchSettings();         // Fetch app settings (like active zones)
   setupEventListeners();   // Bind all event listeners
   loadTheme();             // Apply saved theme
   generateQRCode();        // Generate QR code
@@ -41,6 +42,37 @@ async function fetchMenu() {
     console.error('Error fetching menu:', error);
     showToast('Failed to load menu. Please refresh.');
   }
+}
+
+// --- Fetch settings (like active zones) ---
+async function fetchSettings() {
+  try {
+    const response = await fetch('/api/settings');
+    const data = await response.json();
+
+    if (data.success) {
+      renderZones(data.data.zones);
+    }
+  } catch (error) {
+    console.error('Error fetching settings:', error);
+  }
+}
+
+// --- Render active dining zones in the dropdown ---
+function renderZones(zones) {
+  const select = document.getElementById('diningZone');
+  if (!select) return;
+
+  const activeZones = zones.filter(z => z.active);
+  
+  if (activeZones.length === 0) {
+    select.innerHTML = '<option value="Takeaway" selected>🥡 Takeaway Only</option>';
+    return;
+  }
+
+  select.innerHTML = activeZones.map(z => `
+    <option value="${z.name}">${z.emoji} ${z.name}</option>
+  `).join('');
 }
 
 // ============================================================
@@ -339,6 +371,7 @@ async function placeOrder() {
   const customerName = document.getElementById('customerName').value.trim();
   const tableNumber = document.getElementById('tableNumber').value.trim();
   const mobileNumber = document.getElementById('mobileNumber').value.trim();
+  const diningZone = document.getElementById('diningZone').value;
 
   // Validation
   if (!customerName) {
@@ -354,6 +387,12 @@ async function placeOrder() {
       document.getElementById('tableNumber').focus();
       return;
     }
+  }
+
+  if (mobileNumber && !/^[0-9]{10}$/.test(mobileNumber)) {
+    showToast('⚠️ Mobile number must be 10 digits');
+    document.getElementById('mobileNumber').focus();
+    return;
   }
 
   if (!tableNumber && !mobileNumber) {
@@ -375,7 +414,8 @@ async function placeOrder() {
         items: cart.map(item => ({ id: item.id, quantity: item.quantity })),
         customerName,
         tableNumber: tableNumber || undefined,
-        mobileNumber: mobileNumber || undefined
+        mobileNumber: mobileNumber || undefined,
+        zone: diningZone
       })
     });
 
@@ -398,6 +438,7 @@ async function placeOrder() {
       document.getElementById('customerName').value = '';
       document.getElementById('tableNumber').value = '';
       document.getElementById('mobileNumber').value = '';
+      document.getElementById('diningZone').value = 'Main Hall';
     } else {
       showToast(`❌ ${data.message}`);
     }
@@ -555,7 +596,15 @@ function setupScrollEffects() {
 // Listen for order status updates (optional: show customer their order status)
 socket.on('order-updated', (data) => {
   console.log('Order updated:', data);
-  // Could show a notification to the customer about their order status
+});
+
+// Listen for settings updates (like zones being enabled/disabled)
+socket.on('settings-updated', (data) => {
+  console.log('Settings updated:', data);
+  if (data.zones) {
+    renderZones(data.zones);
+    showToast('Dining zones updated!');
+  }
 });
 
 // ============================================================

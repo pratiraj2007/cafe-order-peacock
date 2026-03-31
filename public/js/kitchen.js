@@ -10,6 +10,7 @@ const socket = io();
 
 // --- State ---
 let orders = [];              // All orders
+let settings = null;           // App settings (zones, etc.)
 let activeFilter = 'All';     // Current filter
 let soundEnabled = true;      // Sound notification toggle
 
@@ -18,6 +19,7 @@ let soundEnabled = true;      // Sound notification toggle
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
   fetchOrders();              // Load existing orders
+  fetchSettings();            // Load app settings
   setupEventListeners();      // Bind event listeners
   setupSocketListeners();     // Setup real-time listeners
 });
@@ -37,6 +39,68 @@ async function fetchOrders() {
     }
   } catch (error) {
     console.error('Error fetching orders:', error);
+  }
+}
+
+// ============================================================
+// ⚙️ SETTINGS MANAGEMENT (ZONES)
+// ============================================================
+async function fetchSettings() {
+  try {
+    const response = await fetch('/api/settings');
+    const data = await response.json();
+    if (data.success) {
+      settings = data.data;
+      renderZonesList();
+    }
+  } catch (error) {
+    console.error('Error fetching settings:', error);
+  }
+}
+
+function renderZonesList() {
+  const container = document.getElementById('zonesList');
+  if (!container || !settings) return;
+
+  container.innerHTML = settings.zones.map(zone => `
+    <div class="zone-setting-item">
+      <div class="zone-setting-info">
+        <span class="zone-setting-emoji">${zone.emoji}</span>
+        <span class="zone-setting-name">${zone.name}</span>
+      </div>
+      <label class="switch">
+        <input type="checkbox" ${zone.active ? 'checked' : ''} onchange="toggleZone('${zone.id}', this.checked)">
+        <span class="slider"></span>
+      </label>
+    </div>
+  `).join('');
+}
+
+async function toggleZone(zoneId, isActive) {
+  try {
+    const response = await fetch('/api/settings/zones', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ zoneId, active: isActive })
+    });
+    
+    const data = await response.json();
+    if (data.success) {
+      settings = data.data;
+      // Socket will notify other clients
+    }
+  } catch (error) {
+    console.error('Error toggling zone:', error);
+  }
+}
+
+function toggleSettingsModal(show) {
+  const overlay = document.getElementById('settingsOverlay');
+  if (show) {
+    overlay.classList.add('active');
+    fetchSettings(); // Refresh before showing
+  } else {
+    overlay.classList.remove('active');
   }
 }
 
@@ -174,6 +238,13 @@ function createOrderCardHTML(order) {
           <div>
             <div class="label">${order.tableNumber !== 'N/A' ? 'Table' : 'Mobile'}</div>
             <div class="value">${order.tableNumber !== 'N/A' ? order.tableNumber : order.mobileNumber}</div>
+          </div>
+        </div>
+        <div class="customer-detail">
+          <span class="icon">📍</span>
+          <div>
+            <div class="label">Zone</div>
+            <div class="value">${order.zone || 'Main Hall'}</div>
           </div>
         </div>
       </div>
@@ -356,5 +427,13 @@ function setupEventListeners() {
   // Filter tabs
   document.querySelectorAll('.filter-tab').forEach(tab => {
     tab.addEventListener('click', () => setFilter(tab.dataset.filter));
+  });
+
+  // Settings Modal
+  document.getElementById('manageZonesBtn').addEventListener('click', () => toggleSettingsModal(true));
+  document.getElementById('settingsClose').addEventListener('click', () => toggleSettingsModal(false));
+  document.getElementById('settingsDoneBtn').addEventListener('click', () => toggleSettingsModal(false));
+  document.getElementById('settingsOverlay').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('settingsOverlay')) toggleSettingsModal(false);
   });
 }

@@ -91,6 +91,15 @@ const menuItems = [
 // In-memory storage with file backup for persistence
 const DATA_DIR = path.join(__dirname, 'data');
 const ORDERS_FILE = path.join(DATA_DIR, 'orders.json');
+const SETTINGS_FILE = path.join(DATA_DIR, 'settings.json');
+
+// Default zones configuration
+const DEFAULT_ZONES = [
+  { id: 'main', name: 'Main Hall', emoji: '🏛️', active: true },
+  { id: 'terrace', name: 'Outdoor Terrace', emoji: '🌿', active: true },
+  { id: 'garden', name: 'Garden Area', emoji: '🌸', active: true },
+  { id: 'ac', name: 'AC Cabin', emoji: '❄️', active: true }
+];
 
 // Ensure data directory exists
 if (!fs.existsSync(DATA_DIR)) {
@@ -114,6 +123,26 @@ function saveOrders() {
     fs.writeFileSync(ORDERS_FILE, JSON.stringify(orders, null, 2));
   } catch (err) {
     console.error('Error saving orders:', err);
+  }
+}
+
+// Settings management
+let settings = { zones: DEFAULT_ZONES };
+try {
+  if (fs.existsSync(SETTINGS_FILE)) {
+    settings = JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf-8'));
+  } else {
+    fs.writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 2));
+  }
+} catch (err) {
+  console.log('Error loading settings, using defaults.');
+}
+
+function saveSettings() {
+  try {
+    fs.writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 2));
+  } catch (err) {
+    console.error('Error saving settings:', err);
   }
 }
 
@@ -141,6 +170,32 @@ app.get('/api/menu', (req, res) => {
     success: true,
     data: menuItems
   });
+});
+
+// GET /api/settings - Returns current settings
+app.get('/api/settings', (req, res) => {
+  res.json({
+    success: true,
+    data: settings
+  });
+});
+
+// PATCH /api/settings/zones - Update zone status
+app.patch('/api/settings/zones', (req, res) => {
+  const { zoneId, active } = req.body;
+  const zone = settings.zones.find(z => z.id === zoneId);
+  
+  if (!zone) {
+    return res.status(404).json({ success: false, message: 'Zone not found' });
+  }
+
+  zone.active = active;
+  saveSettings();
+
+  // Notify all connected clients of settings change
+  io.emit('settings-updated', settings);
+
+  res.json({ success: true, data: settings });
 });
 
 // POST /api/orders - Place a new order
@@ -180,6 +235,7 @@ app.post('/api/orders', (req, res) => {
     customerName,
     tableNumber: tableNumber || 'N/A',
     mobileNumber: mobileNumber || 'N/A',
+    zone: req.body.zone || 'Main Hall', // Default to Main Hall if not provided
     status: 'Pending',       // Pending → Preparing → Ready
     timestamp: new Date().toISOString(),
     createdAt: Date.now()
